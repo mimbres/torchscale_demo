@@ -1,6 +1,8 @@
 # Copyright (c) 2023 Microsoft
 # Licensed under The MIT License [see LICENSE for details]
 
+# Modified to apply "offload_to_cpu" by args.offload_to_cpu=True
+
 from torchscale.architecture.decoder import Decoder, DecoderLayer
 from torchscale.architecture.encoder import Encoder, EncoderLayer
 from torchscale.component.dilated_attention import DilatedAttention
@@ -20,11 +22,10 @@ class LongNetDecoderLayer(DecoderLayer):
             subln=args.subln,
         )
 
+
 class LongNetDecoder(Decoder):
 
-    def build_decoder_layer(
-        self, args, depth, is_moe_layer=False, is_encoder_decoder=False
-    ):
+    def build_decoder_layer(self, args, depth, is_moe_layer=False, is_encoder_decoder=False):
         layer = LongNetDecoderLayer(
             args,
             depth,
@@ -32,10 +33,14 @@ class LongNetDecoder(Decoder):
             is_encoder_decoder=is_encoder_decoder,
         )
         if args.checkpoint_activations:
-            layer = checkpoint_wrapper(layer)
+            if hasattr(args, "offload_to_cpu") and args.offload_to_cpu:
+                layer = checkpoint_wrapper(layer, offload_to_cpu=True)
+            else:
+                layer = checkpoint_wrapper(layer)
         if args.fsdp:
             layer = wrap(layer)
         return layer
+
 
 class LongNetEncoderLayer(EncoderLayer):
 
@@ -50,11 +55,10 @@ class LongNetEncoderLayer(EncoderLayer):
             subln=args.subln,
         )
 
+
 class LongNetEncoder(Encoder):
 
-    def build_encoder_layer(
-        self, args, depth, is_moe_layer=False, is_encoder_decoder=False
-    ):
+    def build_encoder_layer(self, args, depth, is_moe_layer=False, is_encoder_decoder=False):
         layer = LongNetEncoderLayer(
             args,
             depth,
@@ -62,7 +66,10 @@ class LongNetEncoder(Encoder):
             is_encoder_decoder=is_encoder_decoder,
         )
         if args.checkpoint_activations:
-            layer = checkpoint_wrapper(layer)
+            if hasattr(args, "offload_to_cpu") and args.offload_to_cpu:
+                layer = checkpoint_wrapper(layer, offload_to_cpu=True)
+            else:
+                layer = checkpoint_wrapper(layer)
         if args.fsdp:
             layer = wrap(layer)
         return layer
