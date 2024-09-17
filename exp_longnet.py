@@ -24,13 +24,14 @@ enc_cfg = EncoderConfig(
     encoder_ffn_embed_dim=1024,
     encoder_layers=8,
     vocab_size=3000,
-    segment_length='[256, 512, 1024, 2048, 4096]',
-    dilated_ratio='[1, 4, 8, 16, 32]',
+    # segment_length='[256, 512, 1024, 2048, 4096]',
+    segment_length='[128, 256, 512, 1024]',
+    dilated_ratio='[1, 4, 8, 16]',
     subln=True,
     dropout=0.05,
-    flash_attention=True,
+    flash_attention=True, # must be True for LongNet
     checkpoint_activations=True,  # gradient checkpointing
-    offload_to_cpu=True,
+    offload_to_cpu=False,
 )
 enc = LongNetEncoder(enc_cfg).to(device, dtype)
 
@@ -38,7 +39,7 @@ with torch.profiler.profile(activities=[torch.profiler.ProfilerActivity.CUDA],
                             profile_memory=True,
                             record_shapes=True,
                             with_stack=True) as prof:
-    x = torch.rand(2, 20480 * 4, 512, requires_grad=True).to(device, dtype)
+    x = torch.rand(2, 20480 // 4, 512, requires_grad=True).to(device, dtype)
     y = enc.forward(src_tokens=None, token_embeddings=x)["encoder_out"]  # Adjusted output access for LongNetEncoder
     target = torch.rand_like(y, requires_grad=False)
 
@@ -52,4 +53,4 @@ print(prof.key_averages().table(sort_by="self_cpu_memory_usage", row_limit=10))
 print(torch.cuda.memory_summary())
 print(f"Loss: {loss.item()}")
 
-torch.cuda.empty_cache()  # Clear GPU memory
+# torch.cuda.empty_cache()  # Clear GPU memory

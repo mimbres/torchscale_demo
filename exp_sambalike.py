@@ -1,6 +1,6 @@
 import torch
 from torchscale.architecture.config import EncoderConfig
-from torchscale.architecture.encoder import Encoder
+from torchscale.architecture.encoder import SambaLikeEncoder
 import torch.profiler
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -24,13 +24,13 @@ enc_cfg = EncoderConfig(
     encoder_ffn_embed_dim=1024,
     encoder_layers=8,
     vocab_size=3000,
-    subln=True,
+    # subln=True,
     dropout=0.05,
-    flash_attention=True,
+    # flash_attention=True,
     checkpoint_activations=True,  # gradient checkpointing
     offload_to_cpu=False,
 )
-enc = Encoder(enc_cfg).to(device, dtype)
+enc = SambaLikeEncoder(enc_cfg).to(device, dtype)
 
 with torch.profiler.profile(activities=[torch.profiler.ProfilerActivity.CUDA],
                             profile_memory=True,
