@@ -9,7 +9,7 @@ class MambaWrapper(Mamba):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def forward(self, query, key=None, value=None):
+    def forward(self, query, key=None, value=None, **kwargs):
         """
         query: (B, L, D)
         key: Ignored
