@@ -36,7 +36,7 @@ with torch.profiler.profile(activities=[torch.profiler.ProfilerActivity.CUDA],
                             profile_memory=True,
                             record_shapes=True,
                             with_stack=True) as prof:
-    x = torch.rand(2, 20480 //4, 512, requires_grad=True).to(device, dtype)
+    x = torch.rand(2, 20480 *4, 512, requires_grad=True).to(device, dtype)
     y = enc.forward(src_tokens=None, token_embeddings=x)["encoder_out"]  # Adjusted output access for LongNetEncoder
     target = torch.rand_like(y)
 
