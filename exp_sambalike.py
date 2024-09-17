@@ -1,6 +1,6 @@
 import torch
 from torchscale.architecture.config import EncoderConfig
-from torchscale.architecture.encoder import SambaLikeEncoder
+from torchscale.model.SambaLike import SambaLikeEncoder
 import torch.profiler
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
